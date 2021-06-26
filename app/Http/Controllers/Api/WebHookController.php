@@ -16,15 +16,21 @@ class WebHookController extends Controller
      */
     public function currentWeatherData(Request $request)
     {
-        $url = sprintf('https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s&units=%s', $request->q,'a3a69a3b9011c877ead2476b45a3a983', 'metric');
+        $request = json_decode($request->getContent());
+      
+        $url = sprintf('https://api.openweathermap.org/data/2.5/weather?q=%s&appid=%s&units=%s', $request->queryResult->parameters->city, 'a3a69a3b9011c877ead2476b45a3a983', 'metric');
         $response = Http::get($url);
 
-        //return $response;
-
         return [
-            'main' => $response['weather'][0]['main'] ?? '',
-            'temp' => $response['main']['temp'] ?? '',
-            'message' => $response['message'] ?? ''
+            'followupEventInput' => [
+                'languageCode' => 'en-US',
+                'name' => 'weather-call',
+                'parameters' => [
+                    'main' => isset($response['weather'][0]['main']) ? $response['weather'][0]['main'] : '',
+                    'temp' => isset($response['main']['temp']) ? (string) $response['main']['temp'] : '',
+                    'message' => isset($response['message']) ? $response['message'] : ''
+                    ]
+                ]
         ];
     }
 }
